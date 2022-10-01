@@ -1,0 +1,3 @@
+displayName = Aurora Mod
+author = Rocketlauncher269
+version = 0.1
