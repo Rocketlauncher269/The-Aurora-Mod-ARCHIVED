@@ -6,6 +6,10 @@ using System;
 
 namespace AuroraMod {
 	public static partial class AuroraUtils {
+		public static XColor ColorFromPacked(uint packed) {
+			return new((byte)packed, (byte)(packed >> 8), (byte)(packed >> 16), (byte)(packed >> 24));
+		}
+
 		public static SColor ToSystemColor(this XColor color) => SColor.FromArgb(color.A, color.R, color.G, color.B);
 		public static XColor ToXnaColor(this SColor color) => new(color.R, color.G, color.B, color.A);
 
