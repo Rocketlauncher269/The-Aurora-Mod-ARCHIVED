@@ -11,7 +11,7 @@ using Terraria.Utilities;
 using System.Reflection.PortableExecutable;
 using Terraria.DataStructures;
 
-namespace AuroraMod.Items.Weapons.MeleeWeapons {
+namespace AuroraMod.Content.Items.Weapons.MeleeWeapons {
 	public class CattonCondorSword : ModItem {
 		private Color pack = Color.White;
 		private Color oldPack = Color.White;
