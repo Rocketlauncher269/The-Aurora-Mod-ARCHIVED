@@ -3,6 +3,8 @@ using Terraria;
 using Terraria.ModLoader;
 using Terraria.ID;
 using System.Collections.Generic;
+using Terraria.ModLoader.IO;
+using System.IO;
 
 namespace AuroraMod.Items.Weapons.MeleeWeapons {
 	public class CattonCondorSword : ModItem {
@@ -13,6 +15,16 @@ namespace AuroraMod.Items.Weapons.MeleeWeapons {
 		private bool start = false;
 
 		public Color CottonColor => Color.Lerp(pack, oldPack, lerpValue);
+
+		public static void OnHit(Entity entity, Player player, Projectile projectile, ref int damage, ref bool crit) {
+			if (player.HeldItem.type == ModContent.ItemType<CattonCondorSword>()) {
+				CattonCondorSword sword = (CattonCondorSword)player.HeldItem.ModItem;
+				if (sword.start)
+					sword.RandomizePack();
+
+				Main.NewText(sword.pack.ToString());
+			}
+		}
 
 		public override void SetStaticDefaults() {
 			DisplayName.SetDefault("Cattor-Condor Sword");
@@ -26,16 +38,24 @@ namespace AuroraMod.Items.Weapons.MeleeWeapons {
 			Item.width = 50;
 			Item.height = 50;
 
-			Item.damage = 8;
+			Item.damage = 1;
 			Item.DamageType = DamageClass.Melee;
 			Item.useTime = 16;
 			Item.useAnimation = 16;
 			Item.useStyle = ItemUseStyleID.Swing;
-			Item.knockBack = 3;
+			Item.knockBack = 0f;
 			Item.scale = 1.2f;
 			Item.rare = ItemRarityID.Cyan;
 			Item.UseSound = SoundID.Item1;
 			Item.autoReuse = true;
+		}
+
+		public override void ModifyHitNPC(Player player, NPC target, ref int damage, ref float knockBack, ref bool crit) {
+			OnHit(target, player, null, ref damage, ref crit);
+		}
+
+		public override void ModifyHitPvp(Player player, Player target, ref int damage, ref bool crit) {
+			OnHit(target, player, null, ref damage, ref crit);
 		}
 
 		public override void Update(ref float gravity, ref float maxFallSpeed) {
@@ -72,6 +92,38 @@ namespace AuroraMod.Items.Weapons.MeleeWeapons {
 			lerpValue = 0f;
 			start = false;
 			timer = 0u;
+		}
+
+		public override void NetReceive(BinaryReader reader) {
+			pack = reader.ReadRGB();
+			oldPack = reader.ReadRGB();
+			timer = reader.ReadUInt32();
+			lerpValue = reader.ReadSingle();
+			start = reader.ReadBoolean();
+		}
+
+		public override void NetSend(BinaryWriter writer) {
+			writer.WriteRGB(pack);
+			writer.WriteRGB(oldPack);
+			writer.Write(timer);
+			writer.Write(lerpValue);
+			writer.Write(start);
+		}
+
+		public override void SaveData(TagCompound tag) {
+			tag["p"] = pack;
+			tag["o"] = oldPack;
+			tag["t"] = timer;
+			tag["l"] = lerpValue;
+			tag["s"] = start;
+		}
+
+		public override void LoadData(TagCompound tag) {
+			pack = tag.Get<Color>("p");
+			oldPack = tag.Get<Color>("o");
+			timer = tag.Get<uint>("t");
+			lerpValue = tag.GetFloat("t");
+			start = tag.GetBool("s");
 		}
 	}
 }
