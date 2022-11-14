@@ -1,9 +1,11 @@
-﻿using Microsoft.Xna.Framework;
+﻿using AuroraMod.Common.Utils;
+using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 
 using Terraria;
 using Terraria.Audio;
+using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -11,7 +13,13 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
 {
     public class LeverActionShotgunBulletProjectile : ModProjectile
     {
-		public override void SetDefaults()
+        public override void SetStaticDefaults()
+        {
+			ProjectileID.Sets.TrailCacheLength[Type] = 3;
+            ProjectileID.Sets.TrailingMode[Type] = 2;
+		}
+
+        public override void SetDefaults()
 		{
 			Projectile.width = 8;
 			Projectile.height = 8;
@@ -22,13 +30,18 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
 			Projectile.penetrate = 1;
 			Projectile.timeLeft = 600;
 			Projectile.alpha = 60;
-			Projectile.light = 0.35f;
+			Projectile.light = 0.15f;
 			Projectile.ignoreWater = true;
 			Projectile.tileCollide = true;
 			Projectile.extraUpdates = 2;
 
 			AIType = ProjectileID.Bullet;
 		}
+
+        public override void OnSpawn(IEntitySource source)
+        {
+			Projectile.scale = Main.rand.NextFloat(0.6f, 1.1f);
+        }
 
         public override void Kill(int timeLeft)
         {
@@ -43,6 +56,8 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
 
         public override bool PreDraw(ref Color lightColor)
         {
+			Projectile.EasyDrawAfterImage(Color.White * 0.3f);
+
 			lightColor = Color.White;
 
             return base.PreDraw(ref lightColor);

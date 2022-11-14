@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -17,12 +18,12 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
 
         public override void SetDefaults()
         {
-            Item.damage = 58;
+            Item.damage = 20;
             Item.DamageType = DamageClass.Melee;
             Item.width = 40;
             Item.height = 40;
-            Item.useTime = 55;
-            Item.useAnimation = 55;
+            Item.useTime = 50;
+            Item.useAnimation = 50;
             Item.useStyle = -1;
             Item.knockBack = 17;
             Item.value = 17500;
@@ -36,9 +37,20 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
             Item.useAmmo = AmmoID.Bullet;
         }
 
-        public override void ModifyShootStats(Player player, ref Vector2 position, ref Vector2 velocity, ref int type, ref int damage, ref float knockback)
+        public override bool Shoot(Player player, EntitySource_ItemUse_WithAmmo source, Vector2 position, Vector2 velocity, int type, int damage, float knockback)
         {
-            type = Item.shoot;
+            Projectile.NewProjectile(source, position, velocity, Item.shoot, damage, knockback, player.whoAmI, type);
+            return false;
+        }
+
+        public override void AddRecipes()
+        {
+            CreateRecipe()
+                .AddIngredient(ItemID.IllegalGunParts)
+                .AddIngredient(ItemID.Boomstick)
+                .AddIngredient(ItemID.IronBar)
+                .AddTile(TileID.Anvils)
+                .Register();
         }
     }
 }
