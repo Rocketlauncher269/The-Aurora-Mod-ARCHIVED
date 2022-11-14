@@ -17,7 +17,7 @@ namespace AuroraMod.Content.Dusts
 
         public override bool Update(Dust dust)
         {
-            dust.scale -= 0.06f;
+            dust.scale -= 0.05f;
 
             dust.velocity *= 0.9f;
 

@@ -93,7 +93,7 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
             Lighting.AddLight(muzzlePosition, 1f * lightAmount, 0.9f * lightAmount, 0.7f * lightAmount);
         }
 
-        Vector2 Center => Player.RotatedRelativePoint(Player.MountedCenter) + new Vector2(Player.direction * -5, -4);
+        Vector2 Center => Player.RotatedRelativePoint(Player.MountedCenter) + new Vector2(Player.direction * -3, -3);
 
         Player Player => Main.player[Projectile.owner];
         bool playedSound;
@@ -155,7 +155,7 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
         {
             Texture2D tex = TextureAssets.Projectile[Type].Value;
 
-            Vector2 origin = Player.direction == -1 ? new Vector2(tex.Width - 6, 6) : new Vector2(6, 6);
+            Vector2 origin = Player.direction == -1 ? new Vector2(tex.Width - 6, 10) : new Vector2(6, 10);
 
             Main.spriteBatch.Draw(
                 tex,

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 
 using Terraria;
+using Terraria.Audio;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -36,6 +37,8 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
 				Vector2 dustVel = (-Projectile.velocity * 0.7f).RotatedByRandom(0.3f);
 				Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, ModContent.DustType<Dusts.LeverGunDust>(), dustVel.X, dustVel.Y, Scale: Main.rand.NextFloat(0.5f, 1.2f));
 			}
+
+			SoundEngine.PlaySound(SoundID.Item118, Projectile.Center);
 		}
 
         public override bool PreDraw(ref Color lightColor)

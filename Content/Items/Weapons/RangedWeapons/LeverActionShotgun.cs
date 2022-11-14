@@ -12,7 +12,7 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
     {
         public override void SetStaticDefaults()
         {
-            DisplayName.SetDefault("L . A . S");
+            //DisplayName.SetDefault("L . A . S");
         }
 
         public override void SetDefaults()
