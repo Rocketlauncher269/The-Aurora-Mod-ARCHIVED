@@ -193,7 +193,7 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
 
             Main.spriteBatch.Draw(
                 glowTex,
-                Projectile.Center + rotDir * 30 * Player.direction - Main.screenPosition,
+                Projectile.Center + rotDir * 30 * Player.direction - rotDir.RotatedBy(MathHelper.PiOver2) * 4 - Main.screenPosition,
                 null,
                 Color.Orange * mult * 0.3f,
                 Projectile.rotation,
