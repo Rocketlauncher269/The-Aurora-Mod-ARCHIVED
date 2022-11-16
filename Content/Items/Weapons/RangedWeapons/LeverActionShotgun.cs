@@ -25,9 +25,9 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
             Item.useTime = 50;
             Item.useAnimation = 50;
             Item.useStyle = -1;
-            Item.knockBack = 17;
-            Item.value = 17500;
-            Item.rare = ItemRarityID.Red;
+            Item.knockBack = 4;
+            Item.value = 17000;
+            Item.rare = ItemRarityID.LightRed;
             Item.UseSound = SoundID.Item38;
             Item.autoReuse = true;
             Item.noUseGraphic = true;
@@ -48,7 +48,7 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
             CreateRecipe()
                 .AddIngredient(ItemID.IllegalGunParts)
                 .AddIngredient(ItemID.Boomstick)
-                .AddIngredient(ItemID.IronBar)
+                .AddRecipeGroup(RecipeGroupID.IronBar, 15)
                 .AddTile(TileID.Anvils)
                 .Register();
         }
