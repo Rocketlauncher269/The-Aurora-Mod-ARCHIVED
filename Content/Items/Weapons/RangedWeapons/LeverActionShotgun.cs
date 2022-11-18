@@ -22,8 +22,8 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
             Item.DamageType = DamageClass.Melee;
             Item.width = 40;
             Item.height = 40;
-            Item.useTime = 50;
-            Item.useAnimation = 50;
+            Item.useTime = 60;
+            Item.useAnimation = 60;
             Item.useStyle = -1;
             Item.knockBack = 17;
             Item.value = 17500;

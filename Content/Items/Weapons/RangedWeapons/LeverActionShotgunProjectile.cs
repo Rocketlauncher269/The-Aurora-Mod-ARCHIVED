@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
-
+using System.IO;
 using Terraria;
 using Terraria.Audio;
 using Terraria.DataStructures;
@@ -44,24 +44,29 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
         const int bulletsCount = 4;
         void ShootBullets()
         {
-            if (Main.myPlayer != Player.whoAmI)
+            if (Main.netMode == NetmodeID.Server)
                 return;
 
-            Vector2 dirToMouse = RotationToMouse(Center.DirectionTo(Main.MouseWorld).ToRotation()).ToRotationVector2();
+            if (Main.myPlayer == Player.whoAmI)
+                directionToMouse = RotationToMouse(Center.DirectionTo(Main.MouseWorld).ToRotation()).ToRotationVector2();
 
-            Vector2 muzzlePosition = Center - dirToMouse.RotatedBy(MathHelper.PiOver2) * 5;
-            dirToMouse = muzzlePosition.DirectionTo(Main.MouseWorld);
+            Vector2 muzzlePosition = Center + directionToMouse.RotatedBy(-MathHelper.PiOver2) * 5;
 
-            muzzlePosition += dirToMouse * 44;
+            if (Main.myPlayer == Player.whoAmI)
+                directionToMouse = muzzlePosition.DirectionTo(Main.MouseWorld);
 
-            Vector2 shootFrom = Collision.CanHit(Center, 0, 0, muzzlePosition + dirToMouse * 10, 0, 0) ? muzzlePosition : Center;
+            muzzlePosition += directionToMouse * 44;
+
+            Main.NewText(muzzlePosition.X - Player.Center.X);
+
+            Vector2 shootFrom = Collision.CanHit(Center, 0, 0, muzzlePosition + directionToMouse * 10, 0, 0) ? muzzlePosition : Center;
             for (int i = 0; i < bulletsCount; i++)
             {
-                Vector2 velocity = (i == 0 ? dirToMouse : dirToMouse.RotatedByRandom(MathHelper.PiOver4 * 0.14f)) * Main.rand.NextFloat(19, 24);
+                Vector2 velocity = (i == 0 ? directionToMouse : directionToMouse.RotatedByRandom(MathHelper.PiOver4 * 0.14f)) * Main.rand.NextFloat(19, 24);
 
                 Projectile.NewProjectile(
                     Projectile.GetSource_FromThis(),
-                    shootFrom - dirToMouse * 15,
+                    shootFrom - directionToMouse * 15,
                     velocity,
                     //ModContent.ProjectileType<LeverActionShotgunBulletProjectile>(),
                     (int)Projectile.ai[0],
@@ -76,26 +81,26 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
                 
                 Gore gore = Gore.NewGoreDirect(
                     Projectile.GetSource_FromThis(),
-                    muzzlePosition + dirToMouse * 8 * Player.direction,
-                    dirToMouse.RotatedByRandom(MathHelper.PiOver4 * 0.3f) * Main.rand.Next(8, 11),
+                    muzzlePosition + directionToMouse * 8,
+                    directionToMouse.RotatedByRandom(MathHelper.PiOver4 * 0.3f) * Main.rand.Next(8, 11),
                     GoreID.Smoke1 + Main.rand.Next(3),
-                    Main.rand.NextFloat(0.3f, 0.6f)
+                    Main.rand.NextFloat(0.4f, 0.7f)
                     );
                 
 
                 gore.position -= new Vector2(gore.Width, gore.Height) * 0.5f;
                 
 
-                Vector2 dustVel = dirToMouse.RotatedByRandom(MathHelper.PiOver4 * 0.3f) * Main.rand.Next(7, 12);
+                Vector2 dustVel = directionToMouse.RotatedByRandom(MathHelper.PiOver4 * 0.3f) * Main.rand.Next(7, 12);
                 Dust.NewDust(muzzlePosition, 0, 0, DustID.MinecartSpark, dustVel.X, dustVel.Y, Scale: 5);
 
-                dustVel = dirToMouse.RotatedByRandom(MathHelper.PiOver4 * 0.4f) * Main.rand.Next(7, 9);
+                dustVel = directionToMouse.RotatedByRandom(MathHelper.PiOver4 * 0.4f) * Main.rand.Next(7, 9);
                 Dust.NewDust(muzzlePosition, Projectile.width, Projectile.height, ModContent.DustType<LeverGunDust>(), dustVel.X, dustVel.Y, Scale: Main.rand.NextFloat(0.8f, 1.3f));
             }
 
             for (int i = 0; i < 20; i++)
             {
-                Vector2 position = muzzlePosition + Main.rand.NextVector2Unit() * 4 - dirToMouse * 15;
+                Vector2 position = muzzlePosition + Main.rand.NextVector2Unit() * 4 - directionToMouse * 15;
                 Vector2 vel = muzzlePosition.DirectionTo(muzzlePosition) * 3;
                 Dust.NewDust(position, 0, 0, DustID.MinecartSpark, vel.X, vel.Y, Scale: Main.rand.NextFloat(2.6f, 4.7f));
             }
@@ -116,6 +121,7 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
         float recoilOffsetX;
         float animationProgress;
         bool spawnedCasings;
+        Vector2 directionToMouse;
         public override void AI()
         {
             if (Player.ItemAnimationEndingOrEnded)
@@ -124,53 +130,65 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
                 return;
             }
 
-            if (Main.netMode != NetmodeID.Server)
+            if (Main.myPlayer == Player.whoAmI)
+                directionToMouse = Center.DirectionTo(Main.MouseWorld);
+
+            float rotationToMouse = directionToMouse.ToRotation();
+
+            Projectile.Center = Center + directionToMouse * 10;
+            Player.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, rotationToMouse - MathHelper.PiOver2);
+
+            Player.heldProj = Projectile.whoAmI;
+            Player.direction = initialDirection;
+
+            animationProgress = (float)(Player.itemAnimationMax - Player.itemAnimation) / Player.itemAnimationMax;
+
+            Projectile.rotation = 0;
+            float rotateAfter = 0.40f;
+            float stopRotBefore = 0.65f;
+            if (animationProgress >= rotateAfter && animationProgress < stopRotBefore)
             {
-                Vector2 directionToMouse = Center.DirectionTo(Main.MouseWorld);
-                float rotationToMouse = directionToMouse.ToRotation();
-
-                Projectile.Center = Center + directionToMouse * 10;
-                Player.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, rotationToMouse - MathHelper.PiOver2);
-
-                Player.heldProj = Projectile.whoAmI;
-                Player.direction = initialDirection;
-
-                animationProgress = (float)(Player.itemAnimationMax - Player.itemAnimation) / Player.itemAnimationMax;
-
-                Projectile.rotation = 0;
-                float rotateAfter = 0.35f;
-                float stopRotBefore = 0.65f;
-                if (animationProgress >= rotateAfter && animationProgress < stopRotBefore)
+                if (!spawnedCasings && Main.netMode != NetmodeID.Server)
                 {
-                    if (!spawnedCasings)
-                    {
-                        Gore.NewGore(Projectile.GetSource_FromThis(), Center + directionToMouse * 15, -2.5f * Vector2.UnitY - 2 * Vector2.UnitX * Player.direction, Mod.Find<ModGore>("LeverActionShotgunCasing").Type);
-                        spawnedCasings = true;
-                    }
-                    Projectile.rotation = -(MathHelper.TwoPi * ((animationProgress - rotateAfter) / (stopRotBefore - rotateAfter))) * Player.direction;
+                    Gore.NewGore(Projectile.GetSource_FromThis(), Center + directionToMouse * 15, -2.5f * Vector2.UnitY - 2 * Vector2.UnitX * Player.direction, Mod.Find<ModGore>("LeverActionShotgunCasing").Type);
+                    spawnedCasings = true;
+                }
+                Projectile.rotation = -(MathHelper.TwoPi * ((animationProgress - rotateAfter) / (stopRotBefore - rotateAfter))) * Player.direction;
+            }
+            else
+            {
+                if (!playedSound && animationProgress > rotateAfter - 0.20f)
+                {
+                    SoundEngine.PlaySound(SoundID.Item149 with { Pitch = Main.rand.NextFloat(0.3f) }, Projectile.Center);
+                    playedSound = true;
+                }
+
+                if (animationProgress > 0.008f)
+                {
+                    recoilRot *= 0.75f;
+                    recoilOffsetX *= 0.8f;
                 }
                 else
                 {
-                    if (!playedSound && animationProgress > rotateAfter - 0.15f)
-                    {
-                        SoundEngine.PlaySound(SoundID.Item149 with { Pitch = Main.rand.NextFloat(0.3f) }, Projectile.Center);
-                        playedSound = true;
-                    }
-
-                    if (animationProgress > 0.008f)
-                    {
-                        recoilRot *= 0.75f;
-                        recoilOffsetX *= 0.8f;
-                    }
-                    else
-                    {
-                        recoilRot -= 0.4f * Player.direction;
-                        recoilOffsetX += 9f * Player.direction;
-                    }
+                    recoilRot -= 0.4f * Player.direction;
+                    recoilOffsetX += 9f * Player.direction;
                 }
-
-                Projectile.rotation += RotationToMouse(rotationToMouse) + recoilRot;
             }
+
+            Projectile.rotation += RotationToMouse(rotationToMouse) + recoilRot;
+            
+        }
+
+        public override void SendExtraAI(BinaryWriter writer)
+        {
+            writer.Write(directionToMouse.X);
+            writer.Write(directionToMouse.Y);
+        }
+
+        public override void ReceiveExtraAI(BinaryReader reader)
+        {
+            directionToMouse.X = reader.ReadSingle();
+            directionToMouse.Y = reader.ReadSingle();
         }
 
         public override bool ShouldUpdatePosition() => false;
