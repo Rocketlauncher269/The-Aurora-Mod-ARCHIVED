@@ -41,7 +41,6 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
             Player.GetModPlayer<AuroraModPlayer>().ShakeScreen(8f, 0.48f);
         }
 
-        const int bulletsCount = 4;
         void ShootBullets()
         {
             if (Main.netMode == NetmodeID.Server)
@@ -60,9 +59,9 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
             //Main.NewText(muzzlePosition.X - Player.Center.X);
 
             Vector2 shootFrom = Collision.CanHit(Center, 0, 0, muzzlePosition + directionToMouse * 10, 0, 0) ? muzzlePosition : Center;
-            for (int i = 0; i < bulletsCount; i++)
+            for (int i = 0; i < LeverActionShotgun.bulletCount; i++)
             {
-                Vector2 velocity = (i == 0 ? directionToMouse : directionToMouse.RotatedByRandom(MathHelper.PiOver4 * 0.14f)) * Main.rand.NextFloat(19, 24);
+                Vector2 velocity = (i == 0 ? directionToMouse : directionToMouse.RotatedByRandom(LeverActionShotgun.spread)) * Main.rand.NextFloat(19, 24);
 
                 Projectile.NewProjectile(
                     Projectile.GetSource_FromThis(),
@@ -71,7 +70,7 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
                     //ModContent.ProjectileType<LeverActionShotgunBulletProjectile>(),
                     (int)Projectile.ai[0],
                     Projectile.damage,
-                    Projectile.knockBack * 1.5f / bulletsCount,
+                    Projectile.knockBack * 1.5f / LeverActionShotgun.bulletCount,
                     Player.whoAmI
                     );
             }

@@ -22,7 +22,7 @@ namespace AuroraMod.Content.Items.AbilityItems
             Projectile.hostile = false;
             Projectile.ignoreWater = true;
             Projectile.tileCollide = true;
-            Projectile.timeLeft = MAX_FLY_TIME + MAX_IMPALE_TIME + MAX_POST_FLY_TIME + 5;
+            Projectile.timeLeft = MAX_FLY_TIME + MAX_POST_FLY_TIME + 10;
             Projectile.netImportant = true;
             Projectile.penetrate = -1;
         }
@@ -33,7 +33,6 @@ namespace AuroraMod.Content.Items.AbilityItems
 
         const int MAX_FLY_TIME = 17;
         const int MAX_POST_FLY_TIME = 15;
-        const int MAX_IMPALE_TIME = 5;
         ref float AITimer => ref Projectile.ai[0];
         public override void AI()
         {
@@ -56,9 +55,10 @@ namespace AuroraMod.Content.Items.AbilityItems
                         Projectile.Kill();
                     }
 
-                    if (AITimer > MAX_FLY_TIME + MAX_POST_FLY_TIME + MAX_IMPALE_TIME && impaledTarget is not null)
+                    if (distanceToPlayer < 45f)
+                    {
                         impaledTarget = null;
-                    
+                    }                    
                 }
 
                 if (impaledTarget is not null)
@@ -74,6 +74,28 @@ namespace AuroraMod.Content.Items.AbilityItems
         readonly static int[] impaleBlacklist = new int[]
         {
             NPCID.TargetDummy,
+            NPCID.GolemFistLeft,
+            NPCID.GolemFistRight,
+            NPCID.GolemHead,
+            NPCID.GolemHeadFree,
+            NPCID.EaterofWorldsBody,
+            NPCID.EaterofWorldsTail,
+            NPCID.EaterofWorldsHead,
+            NPCID.TheDestroyer,
+            NPCID.TheDestroyerBody,
+            NPCID.TheDestroyerTail,
+            NPCID.WallofFleshEye,
+            NPCID.MartianSaucerTurret,
+            NPCID.PirateShipCannon,
+            NPCID.WyvernBody,
+            NPCID.WyvernBody2,
+            NPCID.WyvernBody3,
+            NPCID.WyvernHead,
+            NPCID.WyvernLegs,
+            NPCID.WyvernTail,
+            NPCID.DiggerBody,
+            NPCID.DiggerHead,
+            NPCID.DiggerTail
         };
 
         NPC impaledTarget;
@@ -94,8 +116,8 @@ namespace AuroraMod.Content.Items.AbilityItems
 
         public override bool OnTileCollide(Vector2 oldVelocity)
         {
-            if (AITimer < MAX_FLY_TIME + MAX_POST_FLY_TIME)
-                AITimer = MAX_FLY_TIME + MAX_POST_FLY_TIME;
+            if (AITimer < MAX_FLY_TIME)
+                AITimer = MAX_FLY_TIME;
             return false;
         }
 
@@ -117,7 +139,7 @@ namespace AuroraMod.Content.Items.AbilityItems
             {
                 float iMult = MathF.Sin((float)((int)maxLinks - i) / (int)maxLinks * MathHelper.Pi);
                 Vector2 sinCurve = Vector2.UnitY.RotatedBy(directionToPlayer.ToRotation()) * MathF.Sin((i + Main.GameUpdateCount) * 0.4f) * iMult * 5
-                   * (AITimer > MAX_FLY_TIME ? AITimer > MAX_FLY_TIME + MAX_POST_FLY_TIME ? MAX_POST_FLY_TIME * 0.4f / ((AITimer - MAX_IMPALE_TIME - MAX_FLY_TIME) * 2) : (AITimer - MAX_FLY_TIME) * 0.4f : 1);
+                   * (AITimer > MAX_FLY_TIME ? AITimer > MAX_FLY_TIME + MAX_POST_FLY_TIME ? MAX_POST_FLY_TIME * 0.4f / ((AITimer - 5 - MAX_FLY_TIME) * 2) : (AITimer - MAX_FLY_TIME) * 0.4f : 1);
 
                 directionToLast = (currentPosition + sinCurve).DirectionTo(lastPosition);
 

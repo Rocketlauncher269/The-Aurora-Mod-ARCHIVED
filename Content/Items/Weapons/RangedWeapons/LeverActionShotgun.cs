@@ -16,6 +16,9 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
             //DisplayName.SetDefault("L . A . S");
         }
 
+        public static readonly float spread = 0.3f;
+        public static readonly float bulletCount = 9;
+
         public override void SetDefaults()
         {
             Item.damage = 20;
