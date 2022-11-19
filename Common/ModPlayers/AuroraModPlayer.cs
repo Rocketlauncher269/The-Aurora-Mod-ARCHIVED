@@ -9,5 +9,6 @@ namespace AuroraMod.Common.ModPlayers
 {
     public partial class AuroraModPlayer : ModPlayer
     {
+
     }
 }

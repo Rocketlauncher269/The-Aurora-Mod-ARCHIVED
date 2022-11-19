@@ -57,7 +57,7 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
 
             muzzlePosition += directionToMouse * 44;
 
-            Main.NewText(muzzlePosition.X - Player.Center.X);
+            //Main.NewText(muzzlePosition.X - Player.Center.X);
 
             Vector2 shootFrom = Collision.CanHit(Center, 0, 0, muzzlePosition + directionToMouse * 10, 0, 0) ? muzzlePosition : Center;
             for (int i = 0; i < bulletsCount; i++)

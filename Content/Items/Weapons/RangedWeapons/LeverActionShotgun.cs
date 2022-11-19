@@ -19,7 +19,7 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
         public override void SetDefaults()
         {
             Item.damage = 20;
-            Item.DamageType = DamageClass.Melee;
+            Item.DamageType = DamageClass.Ranged;
             Item.width = 40;
             Item.height = 40;
             Item.useTime = 60;
