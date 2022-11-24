@@ -14,8 +14,8 @@ namespace AuroraMod.Content.Items.AbilityItems
     {
         public override void SetDefaults()
         {
-            Projectile.width = 18;
-            Projectile.height = 18;
+            Projectile.width = 13;
+            Projectile.height = 13;
             Projectile.aiStyle = -1;
             Projectile.DamageType = DamageClass.MeleeNoSpeed;
             Projectile.friendly = true;
@@ -25,14 +25,16 @@ namespace AuroraMod.Content.Items.AbilityItems
             Projectile.timeLeft = MAX_FLY_TIME + MAX_POST_FLY_TIME + 10;
             Projectile.netImportant = true;
             Projectile.penetrate = -1;
+
+            Projectile.extraUpdates = 3;
         }
 
         Player Player => Main.player[Projectile.owner];
         Vector2 directionToPlayer;
         float distanceToPlayer;
 
-        const int MAX_FLY_TIME = 17;
-        const int MAX_POST_FLY_TIME = 15;
+        const int MAX_FLY_TIME = 17 * 3;
+        const int MAX_POST_FLY_TIME = 15 * 3;
         ref float AITimer => ref Projectile.ai[0];
         public override void AI()
         {
@@ -48,14 +50,14 @@ namespace AuroraMod.Content.Items.AbilityItems
 
                 if (AITimer > MAX_FLY_TIME + MAX_POST_FLY_TIME)
                 {
-                    Projectile.Center = Vector2.Lerp(Projectile.Center, Player.Center, 0.25f);
+                    Projectile.Center = Vector2.Lerp(Projectile.Center, Player.Center, 0.08f);
 
                     if (distanceToPlayer < 30f)
                     {
                         Projectile.Kill();
                     }
 
-                    if (distanceToPlayer < 45f)
+                    if (distanceToPlayer < 40f)
                     {
                         impaledTarget = null;
                     }                    
@@ -102,7 +104,7 @@ namespace AuroraMod.Content.Items.AbilityItems
         Vector2 targetCenterOffset;
         public override void OnHitNPC(NPC target, int damage, float knockback, bool crit)
         {
-            if (target.life > 0f && target.active && !impaleBlacklist.Contains(target.type))
+            if (target.life > 0f && target.active && !target.boss && !impaleBlacklist.Contains(target.type))
             {
                 impaledTarget = target;
                 targetCenterOffset = impaledTarget.Center - Projectile.Center;
@@ -139,7 +141,7 @@ namespace AuroraMod.Content.Items.AbilityItems
             {
                 float iMult = MathF.Sin((float)((int)maxLinks - i) / (int)maxLinks * MathHelper.Pi);
                 Vector2 sinCurve = Vector2.UnitY.RotatedBy(directionToPlayer.ToRotation()) * MathF.Sin((i + Main.GameUpdateCount) * 0.4f) * iMult * 5
-                   * (AITimer > MAX_FLY_TIME ? AITimer > MAX_FLY_TIME + MAX_POST_FLY_TIME ? MAX_POST_FLY_TIME * 0.4f / ((AITimer - 5 - MAX_FLY_TIME) * 2) : (AITimer - MAX_FLY_TIME) * 0.4f : 1);
+                   * (AITimer > MAX_FLY_TIME ? AITimer > MAX_FLY_TIME + MAX_POST_FLY_TIME ? MAX_POST_FLY_TIME * 0.4f / ((AITimer - 5 - MAX_FLY_TIME) * 2) : (AITimer - MAX_FLY_TIME) * 0.4f : 1) / (Projectile.extraUpdates + 1);
 
                 directionToLast = (currentPosition + sinCurve).DirectionTo(lastPosition);
 
