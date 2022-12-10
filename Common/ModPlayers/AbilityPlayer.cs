@@ -20,7 +20,7 @@ namespace AuroraMod.Common.ModPlayers
             if (AuroraKeybindSystem.AbilityKeyBind.JustPressed && AbilityCooldown <= 0)
             {
                 Item item = ModContent.GetInstance<AbilitySlot>().FunctionalItem;
-                if (item is not null)
+                if (item.ModItem is not null)
                 {
                     IAbilityItem abilityItem = item.ModItem as IAbilityItem;
                     abilityItem.OnUse(Player, Player.GetSource_FromThis());
