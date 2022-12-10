@@ -19,6 +19,8 @@ namespace AuroraMod.Common.Bases.Items
             Item.height = 20;
             Item.maxStack = 9999;
 
+            Item.DamageType = DamageClass.Ranged;
+
             Item.damage = Damage;
             Item.crit = CritChance;
             Item.knockBack = Knockback;

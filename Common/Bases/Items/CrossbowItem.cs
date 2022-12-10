@@ -19,9 +19,9 @@ namespace AuroraMod.Common.Bases.Items
     public abstract class CrossbowItem : ModItem
     {
         public abstract int UseTime { get; }
-        public abstract int Damage { get; }
+        public abstract int MaxDamage { get; }
         public abstract int Knockback { get; }
-        public abstract float ShootSpeed { get; }
+        public abstract float MaxShootSpeed { get; }
         public virtual SoundStyle ShootSound => SoundID.Item102;
         public virtual Vector2 CenterOffset => Vector2.Zero;
         public virtual Vector2 DrawOriginOffset => Vector2.Zero;
@@ -65,7 +65,7 @@ namespace AuroraMod.Common.Bases.Items
         public virtual int ItemRare => ItemRarityID.LightRed;
         public override sealed void SetDefaults()
         {
-            Item.damage = Damage;
+            Item.damage = MaxDamage;
             Item.DamageType = DamageClass.Ranged;
             Item.knockBack = Knockback;
 
@@ -182,22 +182,20 @@ namespace AuroraMod.Common.Bases.Items
             {
                 UpdateCenterRot();
 
-                float maxTimer = CrossbowItem.UseTime * (Projectile.extraUpdates + 1);
+                int maxTimer = CrossbowItem.UseTime * (Projectile.extraUpdates + 1);
 
                 if (PlayerInput.Triggers.Current.MouseLeft && Player.HasItem((int)Projectile.ai[0]))
                 {
                     ShootTimer++;
+                    if (ShootTimer >= maxTimer)
+                    {
+                        ShootTimer = maxTimer;
+                    }
                 }
                 else
                 {
                     if (ShootTimer > maxTimer * 0.2f)
                         ShootBolt();
-                    ShootTimer = 0;
-                }
-
-                if (ShootTimer >= maxTimer)
-                {
-                    ShootBolt();
                     ShootTimer = 0;
                 }
 
@@ -226,7 +224,7 @@ namespace AuroraMod.Common.Bases.Items
                 muzzlePos = Projectile.Center;
             }
 
-            Vector2 velocity = directionToMouse * CrossbowItem.ShootSpeed * shootProg;
+            Vector2 velocity = directionToMouse * CrossbowItem.MaxShootSpeed * shootProg;
             int type = ContentSamples.ItemsByType[(int)Projectile.ai[0]].shoot;
             int damage = (int)(Projectile.damage * CrossbowItem.ShootDamageScaling(shootProg));
             if (CrossbowItem.ShootCrossbow(Player, source, muzzlePos, velocity, type, damage, Projectile.knockBack))
@@ -263,14 +261,30 @@ namespace AuroraMod.Common.Bases.Items
             recoil = reader.ReadVector2();
         }
 
+        float shakeTimer;
         public override bool PreDraw(ref Color lightColor)
         {
             Texture2D texture = TextureAssets.Item[CrossbowItem.Type].Value;
             Vector2 origin = new Vector2(0, texture.Height * 0.5f) + CrossbowItem.DrawOriginOffset + Vector2.UnitX * recoil.X;
 
+            float progress = (float)ShootTimer / (CrossbowItem.UseTime * (Projectile.extraUpdates + 1));
+            if (progress == 1)
+            {
+                shakeTimer += 0.01f;
+            }
+            else
+            {
+                shakeTimer = 0;
+            }
+
+            float progAlpha = -MathF.Pow(progress - 1, 6) + 1;
+
+            Vector2 barPosition = Projectile.Center + directionToMouse * texture.Width * 0.45f + directionToMouse.RotatedBy(-MathHelper.PiOver2 * Player.direction) * texture.Height * 0.55f - Main.screenPosition;
+            Color barColor = CrossbowItem.ChargeBarColor(progress);
+
             Main.EntitySpriteDraw(
                 texture,
-                Projectile.Center - Main.screenPosition,
+                Projectile.Center - Main.screenPosition + Main.rand.NextVector2Unit() * 2f * Math.Clamp(shakeTimer, 0f, 1f) * (Main.rand.NextBool(4) ? 1 : 0),
                 null,
                 lightColor,
                 Projectile.rotation + (Player.direction == -1 ? MathHelper.Pi : 0),
@@ -280,51 +294,52 @@ namespace AuroraMod.Common.Bases.Items
                 0
                 );
 
-            Vector2 position = Projectile.Center + directionToMouse * texture.Width * 0.55f + directionToMouse.RotatedBy(-MathHelper.PiOver2 * Player.direction) * texture.Height * 0.55f - Main.screenPosition;
-
-            float progress = (float)ShootTimer / (CrossbowItem.UseTime * (Projectile.extraUpdates + 1));
-            float progAlpha = -MathF.Pow(progress - 1, 6) + 1;
-
             /*
-            Texture2D texBack = ModContent.Request<Texture2D>("AuroraMod/Content/Assets/CBBarOutline_Back", AssetRequestMode.ImmediateLoad).Value;
+            Main.spriteBatch.End();
+            Main.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Additive, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.GameViewMatrix.TransformationMatrix);
+
+            Texture2D epicGlow = ModContent.Request<Texture2D>("AuroraMod/Content/Assets/CBBar_Something", AssetRequestMode.ImmediateLoad).Value;
             Main.EntitySpriteDraw(
-                texBack,
-                position,
+                epicGlow,
+                barPosition,
                 null,
-                Color.White * progAlpha,
+                Color.Black * progAlpha * 0.4f,
                 Projectile.rotation,
-                texBack.Size() * 0.5f + Vector2.UnitX * recoil.X,
-                0.2f,
+                epicGlow.Size() * 0.5f + Vector2.UnitX * recoil.X,
+                new Vector2(progress, 1) / 5,
                 SpriteEffects.None,
                 0
-            );
+                );
+
+            Main.spriteBatch.End();
+            Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.GameViewMatrix.TransformationMatrix);
             */
 
             Texture2D tex = ModContent.Request<Texture2D>("AuroraMod/Content/Assets/CBBarOutline", AssetRequestMode.ImmediateLoad).Value;
             Main.EntitySpriteDraw(
                 tex,
-                position,
+                barPosition,
                 null,
                 Color.White * progAlpha,
                 Projectile.rotation,
                 tex.Size() * 0.5f + Vector2.UnitX * recoil.X,
                 1,
-                SpriteEffects.None,
+                Player.direction == -1 ? SpriteEffects.FlipVertically : SpriteEffects.None,
                 0
-            );
+                );
 
             Texture2D texBar = ModContent.Request<Texture2D>("AuroraMod/Content/Assets/CBBar", AssetRequestMode.ImmediateLoad).Value;
             Main.EntitySpriteDraw(
                 texBar,
-                position,
+                barPosition,
                 null,
-                CrossbowItem.ChargeBarColor(progress) * progAlpha,
+                barColor * progAlpha,
                 Projectile.rotation,
                 texBar.Size() * 0.5f + Vector2.UnitX * recoil.X,
                 new Vector2(progress, 1),
-                SpriteEffects.None,
+                Player.direction == -1 ? SpriteEffects.FlipVertically : SpriteEffects.None,
                 0
-            );
+                );
 
             return false;
         }
