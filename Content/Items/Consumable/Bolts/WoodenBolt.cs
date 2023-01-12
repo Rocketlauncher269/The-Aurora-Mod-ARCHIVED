@@ -37,7 +37,6 @@ namespace AuroraMod.Content.Items.Consumable.Bolts
             Projectile.penetrate = 1;
             Projectile.timeLeft = 600;
             Projectile.alpha = 60;
-            Projectile.light = 0.15f;
             Projectile.ignoreWater = true;
             Projectile.tileCollide = true;
         }

@@ -21,16 +21,11 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
         public override Vector2 MuzzleOffset => Vector2.UnitX * 30;
         public override Vector2 Recoil => new Vector2(9, 0.1f);
 
-        float barColorTimer;
         public override Color ChargeBarColor(float progress)
         {
-            barColorTimer += progress * 0.3f;
-            if (progress == 0)
-            {
-                barColorTimer = 0;
-            }
-            
-            return Color.Lerp(Color.Lerp(Color.DarkSlateBlue, Color.BlueViolet, progress), Color.Lerp(Color.White, Color.BlueViolet, 0.5f), progress * MathF.Pow((MathF.Sin(barColorTimer) + 1) / 2f, 4));
+            Color colorProg = Color.Lerp(Color.DarkRed * 1.25f, Color.Orange, MathF.Pow(progress, 2));
+
+            return Color.Lerp(colorProg, Color.Lerp(colorProg, Color.White, 0.3f), (MathF.Sin(Main.GameUpdateCount * 0.08f) + 1) * 0.5f);
         }
     }
 }

@@ -47,18 +47,10 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
                 return;
 
             if (Main.myPlayer == Player.whoAmI)
-                directionToMouse = RotationToMouse(Center.DirectionTo(Main.MouseWorld).ToRotation()).ToRotationVector2();
+                UpdateCenterRot();
 
-            Vector2 muzzlePosition = Center + directionToMouse.RotatedBy(-MathHelper.PiOver2) * 5;
-
-            if (Main.myPlayer == Player.whoAmI)
-                directionToMouse = muzzlePosition.DirectionTo(Main.MouseWorld);
-
-            muzzlePosition += directionToMouse * 44;
-
-            //Main.NewText(muzzlePosition.X - Player.Center.X);
-
-            Vector2 shootFrom = Collision.CanHit(Center, 0, 0, muzzlePosition + directionToMouse * 10, 0, 0) ? muzzlePosition : Center;
+            Vector2 muzzlePosition = Projectile.Center + directionToMouse * 48 + directionToMouse.RotatedBy(-MathHelper.PiOver2 * Player.direction) * 9;
+            Vector2 shootFrom = Collision.CanHit(Projectile.Center, 0, 0, muzzlePosition + directionToMouse * 10, 0, 0) ? muzzlePosition : Projectile.Center;
             for (int i = 0; i < LeverActionShotgun.bulletCount; i++)
             {
                 Vector2 velocity = (i == 0 ? directionToMouse : directionToMouse.RotatedByRandom(LeverActionShotgun.spread)) * Main.rand.NextFloat(19, 24);
@@ -77,7 +69,6 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
 
             for (int i = 0; i < Main.rand.Next(3, 4); i++)
             {
-                
                 Gore gore = Gore.NewGoreDirect(
                     Projectile.GetSource_FromThis(),
                     muzzlePosition + directionToMouse * 8,
@@ -111,7 +102,18 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
             Lighting.AddLight(muzzlePosition, 1f * lightAmount, 0.9f * lightAmount, 0.7f * lightAmount);
         }
 
-        Vector2 Center => Player.RotatedRelativePoint(Player.MountedCenter) + new Vector2(Player.direction * -3, -3);
+        void UpdateCenterRot()
+        {
+            // Get player shoulder pos
+            Projectile.Center = Player.RotatedRelativePoint(Player.MountedCenter) + new Vector2(-4 * Player.direction, -2);
+
+            directionToMouse = Projectile.Center.DirectionTo(Main.MouseWorld);
+
+            Projectile.Center -= directionToMouse * 50 + directionToMouse.RotatedBy(-MathHelper.PiOver2 * Player.direction) * 8;
+            directionToMouse = Projectile.Center.DirectionTo(Main.MouseWorld);
+            Projectile.Center += directionToMouse * (50 + 14);
+        }
+    
         float RotationToMouse(float rotationToMouse) => rotationToMouse + 0.07f * Player.direction + (Player.direction == -1 ? MathHelper.Pi : 0);
 
         Player Player => Main.player[Projectile.owner];
@@ -130,11 +132,9 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
             }
 
             if (Main.myPlayer == Player.whoAmI)
-                directionToMouse = Center.DirectionTo(Main.MouseWorld);
+                UpdateCenterRot();
 
             float rotationToMouse = directionToMouse.ToRotation();
-
-            Projectile.Center = Center + directionToMouse * 10;
             Player.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, rotationToMouse - MathHelper.PiOver2);
 
             Player.heldProj = Projectile.whoAmI;
@@ -149,7 +149,7 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
             {
                 if (!spawnedCasings && Main.netMode != NetmodeID.Server)
                 {
-                    Gore.NewGore(Projectile.GetSource_FromThis(), Center + directionToMouse * 15, -2.5f * Vector2.UnitY - 2 * Vector2.UnitX * Player.direction, Mod.Find<ModGore>("LeverActionShotgunCasing").Type);
+                    Gore.NewGore(Projectile.GetSource_FromThis(), Projectile.Center + directionToMouse * 15, -2.5f * Vector2.UnitY - 2 * Vector2.UnitX * Player.direction, Mod.Find<ModGore>("LeverActionShotgunCasing").Type);
                     spawnedCasings = true;
                 }
                 Projectile.rotation = -(MathHelper.TwoPi * ((animationProgress - rotateAfter) / (stopRotBefore - rotateAfter))) * Player.direction;
@@ -196,7 +196,7 @@ namespace AuroraMod.Content.Items.Weapons.RangedWeapons
         {
             Texture2D tex = TextureAssets.Projectile[Type].Value;
 
-            Vector2 origin = (Player.direction == -1 ? new Vector2(tex.Width - 6, 8) : new Vector2(6, 8)) + Vector2.UnitX * recoilOffsetX;
+            Vector2 origin = (Player.direction == -1 ? new Vector2(tex.Width - 26, 16) : new Vector2(26, 16)) + Vector2.UnitX * recoilOffsetX;
 
             Main.spriteBatch.Draw(
                 tex,
